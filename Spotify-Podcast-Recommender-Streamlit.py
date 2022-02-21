@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics import pairwise_distances
 from PIL import Image
 
-st.title("Spotify Mental Health Podcast Recommender")
+st.title("Mental Health Podcast Recommender")
 image = Image.open('app_pic.jpeg')
 st.image(image, caption='Source: https://www.thedowneypatriot.com/articles/taking-care-of-your-mental-health-more-important-than-ever')
 #get dataframes
@@ -25,28 +25,29 @@ podcast_doc_topic_df = pd.read_pickle('podcast_doc_topic.pkl')
 episode_df_display = episode_df.drop(columns=['index', 'Ep_id', 'Desc_Processed'])
 episode_df_display.rename(columns={"Ep_desc": "Episode Description", "Ep_date": "Episode Date", "Ep_name": "Episode_Name"}, inplace=True)
 
-st.subheader("Here's the list of episodes:")
+st.subheader("Here's the list of Spotify podcasts and their episodes:")
 st.dataframe(episode_df_display)
 
 podcast_names = episode_df['Podcast_Name'].drop_duplicates()
-specify_podcast = st.selectbox('Filter podcast:', podcast_names)
+specify_podcast = st.selectbox('Filter podcast:', podcast_names.sort_values())
 episodes = episode_df_display[episode_df_display["Podcast_Name"] == specify_podcast]
 st.write(episodes)
 
 # Recommender
 
-@st.cache
+
 def recommend_podcast(podcast_name, pod_df, pod_doc_topic):
     podcast_row = pod_df[pod_df['Podcast_Name'] == podcast_name]
     podcast_index = podcast_row.index[0]
-    #print('Given: ', podcast_name)
-    #print('Description: ', pod_df.iloc[podcast_index]['Podcast_Description'])
+    st.write('Given: ', podcast_name)
+    st.write('Description: ', pod_df.iloc[podcast_index]['Podcast_Description'])
     dist = pairwise_distances(np.array(pod_doc_topic.iloc[podcast_index]).reshape(1,-1), pod_doc_topic, metric = 'cosine')
     rec_pod_index = dist.argsort()[0][1]
     rec_pod_name = pod_df.iloc[rec_pod_index]['Podcast_Name']
-    #print('\nRecommended Podcast: ', rec_pod_name)
-    #print('Description: ', pod_df.iloc[rec_pod_index]['Podcast_Description'])
-    return rec_pod_name
+    st.subheader("Recommendation")
+    st.write('Recommended Podcast: ', rec_pod_name)
+    st.write('Description: ', pod_df.iloc[rec_pod_index]['Podcast_Description'])
+    #return rec_pod_name
 
 @st.cache
 def recommend_episode(ep_index, ep_df, ep_doc_topic, shortened_doc_topic=None):
@@ -120,22 +121,39 @@ def recommender2(ep_index, ep_df, pod_df, ep_doc_topic, pod_doc_topic, podcast_c
 
 # Ask user for input
 
-st.subheader('Tell Me...')
-given_ep = st.text_input("What episode number? (range 0-18114)")
-st.write('The episode number you chose is: ',given_ep)
+#st.subheader('Tell Me...')
+st.markdown('## Tell Me... :eyes:')
+rec_type = st.radio(('Want a show recommendation or episode recommendation?'),
+                    ('Podcast', 'Episode'))
 
 
-podcast_choice = st.selectbox(
-     'From same podcast, different podcast, or any (closest match)?',
-     ('Same', 'Different', 'Any'))
+#if episode 
+if rec_type == 'Episode':
+    
+    given_ep = st.text_input("What episode number? (range 0-18114)")
+    st.write('The episode number you chose is: ',given_ep)
+    
+    
+    podcast_choice = st.selectbox(
+         'From same podcast, different podcast, or any (closest match)?',
+         ('Same', 'Different', 'Any'))
+    
+    st.write('You selected:', podcast_choice)
+    
+    if st.button('Recommend another episode!'):
+        st.markdown('## Results:headphones:')
+        try:
+            
+            ans = recommender2(int(given_ep), episode_df, podcast_names_df, ep_doc_topic_df, podcast_doc_topic_df, podcast_choice)
+            st.write(ans)
+        except ValueError:
+            st.write('Please enter episode number above')
 
-st.write('You selected:', podcast_choice)
-
-if st.button('Recommend another episode!'):
-    st.header('Results')
-    try:
+#if podcast
+elif rec_type == 'Podcast':
+    pod_choice = st.selectbox('Your podcast:', podcast_names.sort_values())
+    st.write('You selected:', pod_choice)
+    if st.button('Recommend another podcast!'):
+        st.markdown('## Results :headphones:')
+        recommend_podcast(pod_choice, podcast_names_df, podcast_doc_topic_df)
         
-        ans = recommender2(int(given_ep), episode_df, podcast_names_df, ep_doc_topic_df, podcast_doc_topic_df, podcast_choice)
-        st.write(ans)
-    except ValueError:
-        st.write('Please enter episode number above')

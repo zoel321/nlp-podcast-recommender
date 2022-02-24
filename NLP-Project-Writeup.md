@@ -26,7 +26,7 @@ I used Regex to remove digits, punctuation, symbols, and extraneous non-English 
 
 Vectorization and Topic Modeling:
 
-I tried Non-Negative Matrix Dactorization and Latent Semantic Allocation combinations with CV and TF-IDF vectorizers. Granularity was ultimately prioritized over interpretability. For episodes, I used the TF-IDF vectorizer with LSA, which resulted in 15 topics. For podcasts, I used the TF-IDF vectorizer with NMF, which resulted in 10 topics (overall interpretable: story, relationship, fitness, women, school, weight loss, art, therapy).
+I tried Non-Negative Matrix Factorization and Latent Semantic Allocation combinations with CV and TF-IDF vectorizers. Granularity was ultimately prioritized over interpretability. For episodes, I used the TF-IDF vectorizer with LSA, which resulted in 15 topics. For podcasts, I used the TF-IDF vectorizer with NMF, which resulted in 10 topics (overall interpretable: story, relationship, fitness, women, school, weight loss, art, therapy).
 
  
 

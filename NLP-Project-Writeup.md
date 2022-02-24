@@ -1,42 +1,53 @@
-##  Classification Project Write-Up
+## NLP Project Write-Up
 
 **Abstract**
 
-The goal of this project was to use classification to predict rehospitalization (either <30 days or >30 days, vs. no rehospitalization) using the US Hospitals 1999-2008 Diabetes dataset, which consists of de-identified healthcare data for inpatient visits. Random forest, logistic regression, and XGBoost models were tried. After using the final logistic regression model to predict rehospitalization on the test data, the F1 score was 0.529 while the accuracy was 60.57%.
+The goal of this project was to create a content-based recommender for mental health podcasts. Descriptions for 350 Spotify podcast shows along with their episode descriptions were retrieved then cleaned and preprocessed using various NLP packages/tools. The topic models derived from the text data for podcasts and episodes were then used to develop the recommendation system. The user will receive a podcast or episode recommendation based on their input. 
 
 **Design**
 
-This project’s data came from the Center for Clinical and Translational Research at Virginia University. Although the data contains older information, it may provide some insights as to which factors (patient or hospital encounter-related) during an inpatient visit can contribute to predicting readmission. Preventing readmissions is not only beneficial for patients and their providers, who can dedicate their efforts to new admissions, but also for managed care organizations who want to avoid unnecessary healthcare expenditures. 
+I focused on mental health podcasts for this project because it is a specific topic (narrows down scope) yet also contains a wide variety of subtopics. Target users may have an idea of what topic interests them but have trouble finding another related episode manually due to the millions of episodes that exist in the Spotify podcast catalog. The description data for podcasts and episodes were cleaned and preprocessed/tokenized and then vectorized to matrices of token counts, before undergoing dimensionality reduction to find the topics. The quality of the topics was determined subjectively using personal observation/judgment. The document-topic matrices for podcasts and episodes were then used to build the content-based recommendation system. This was done using cosine similarity as the distance metric.
 
-The F1 metric was prioritized for model comparison, as minimizing false negatives (for the purpose of targeting suitable interventions) and false positives (for cost) were important for the goal. The target class distribution was also imbalanced after data cleaning, which would likely be the case in other comparable datasets. 
+ 
 
 **Data**
 
-The initial dataset contained over 100,000 rows/encounters with over 50 features. These included: race, gender, age, admission type, time in hospital, medical specialty of admitting physician, number of lab test performed, HbA1c test result, diagnosis, number of medications, diabetes medications, number of outpatient, inpatient, and emergency visits in the year before the hospitalization, etc. To reduce confounding, only one encounter (the first encounter) was included for each unique patient. Patients who had a discharge status labeled as hospice, expired, or missing were also removed.
+This project’s data was retrieved using Spotipy, a Python library for the Spotify Web API.
+
+The initial podcast dataset contained 350 shows, along with their descriptions and Spotify show ID. After removing duplicates, this resulted in 344 shows. The initial episode dataset 20745 shows, along with their descriptions, podcast name, Spotify episode ID, and published date. After removing duplicates, this resulted in 18115 episodes. The text preprocessing and topic modeling steps were performed separately for these datasets before incorporating the results into the recommendation system. 
 
 **Algorithms**
 
-Feature Engineering:
+Preprocessing: 
 
-\-    Grouping medication classes then binarizing (same dose/not on med = 0, increase/decrease dose = 1)
+I used Regex to remove digits, punctuation, symbols, and extraneous non-English characters. The words were then converted to lowercase and lemmatized. Stop words (default and custom) were incorporated during the vectorization process. For the episodes, I used spaCy to locate proper nouns, so that I could later tokenize them as compound words (such as combining first and last name, for a guest interviewed on a podcast). For the podcasts, I grouped some frequent compound terms (e.g., personal development, mental health, social media).
 
-\-    Turning categorical variables into dummy variables: Admission Type, A1C, Max Glucose, Diagnoses 1/2/3, Age Group
+ 
 
-\-    Interaction: Diagnosis of heart failure and on TZD-class medication for diabetes 
+Vectorization and Topic Modeling:
 
-Models:
+I tried Non-Negative Matrix Dactorization and Latent Semantic Allocation combinations with CV and TF-IDF vectorizers. Granularity was ultimately prioritized over interpretability. For episodes, I used the TF-IDF vectorizer with LSA, which resulted in 15 topics. For podcasts, I used the TF-IDF vectorizer with NMF, which resulted in 10 topics (overall interpretable: story, relationship, fitness, women, school, weight loss, art, therapy).
 
-Logistic regression, random forest, and XGBoost classifiers were tuned and cross-validated (80/20 train vs. holdout). A logistic regression model was selected for the final test evaluation, due to its highest F1 score (0.5218) and comparable accuracy (59.78%)  and ROC AUC values (0.628), along with its interpretability. On the holdout set, the F1 score was 0.5294 and the accuracy score was 60.57%. The top five features (largest coefficients) in the final model were: Age 70-80, 60-80, number of inpatient visits in preceding year, Age 80-90, followed by Age 50-60. This was similar in terms of features with the largest SHAP values, except “Emergency Department admission type” is included as a top feature. 
+ 
+
+Recommendation system:
+
+A content-based recommendation system was built using cosine similarity as the distance metric, to find the most similar episodes and podcasts within their respective document-topic matrices. The user can choose if they want an episode or podcast recommendation. If the user wants to find a similar episode, they can also specify if they want a recommendation from the same podcast, different podcast, or any. If from a different podcast, the cosine similarity scores from the podcast document-topic matrix and the episode document-topic matrix are combined to find the lowest (closest) score.  
+
+ 
 
 **Tools**
 
+-  Spotipy for data retrieval 
 - Pandas for data analysis/cleaning
-- Scikit-learn for modeling steps
-- Matplotlib, Seaborn and SHAP for plotting/visualizations
+- NLTK, spaCy for text preprocessing
+- Scikit-learn for vectorization, dimensionality reduction/topic modeling
 
 **Communication**
 
-The results and code are in this repo, along with the final slides. A Tableau Public dashboard may be embedded in a future blog post.
+The data and code are in this repo, along with the final slides. The recommender was deployed to Streamlit and can be accessed here: https://share.streamlit.io/zoel321/nlp-podcast-recommender/main/Spotify-Podcast-Recommender-Streamlit.py
+
+
 
 
 

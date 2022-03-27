@@ -14,7 +14,7 @@ I focused on mental health podcasts for this project because it is a specific to
 
 This project’s data was retrieved using Spotipy, a Python library for the Spotify Web API.
 
-The initial podcast dataset contained 350 shows, along with their descriptions and Spotify show ID. After removing duplicates, this resulted in 344 shows. The initial episode dataset 20745 shows, along with their descriptions, podcast name, Spotify episode ID, and published date. After removing duplicates, this resulted in 18115 episodes. The text preprocessing and topic modeling steps were performed separately for these datasets before incorporating the results into the recommendation system. 
+The initial podcast dataset contained 350 shows, along with their descriptions and Spotify show ID. After removing duplicates, this resulted in 344 shows. The initial episode dataset contained 20745 episodes, along with their descriptions, podcast name, Spotify episode ID, and published date. After removing duplicates, this resulted in 18115 episodes. The text preprocessing and topic modeling steps were performed separately for these datasets before incorporating the results into the recommendation system. 
 
 **Algorithms**
 
